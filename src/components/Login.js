@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react'
 import Header from './Header'
 import { checkValidData } from '../utils/validate'
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "../utils/firebase"
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState(true);
@@ -10,13 +11,14 @@ const Login = () => {
   const email = useRef(null);
   const name = useRef(null);
   const password = useRef(null);
+  const navigate = useNavigate();
+  
 
   const toggleSignInForm = () => {
     setIsSignInForm(!isSignInForm);
   }
 
   const handleButtonClick = () => {
-    debugger
     const error = checkValidData(email.current.value, password.current.value, name?.current?.value, !isSignInForm);
     setErrorMessage(error);
 
@@ -27,7 +29,16 @@ const Login = () => {
         .then((userCredential) => {
           // Signed up 
           const user = userCredential.user;
-          console.log(user);
+          updateProfile(auth.currentUser, {
+            displayName: name.current.value, photoURL: "https://example.com/jane-q-user/profile.jpg"
+          }).then(() => {
+            // Profile updated!
+            // ...
+          }).catch((error) => {
+            // An error occurred
+            // ...
+          });
+          navigate("/browse");
           // ...
         })
         .catch((error) => {
@@ -41,6 +52,7 @@ const Login = () => {
       .then((userCredential) => {
         // Signed in 
         const user = userCredential.user;
+        navigate("/browse");
         console.log(user)
         // ...
       })
